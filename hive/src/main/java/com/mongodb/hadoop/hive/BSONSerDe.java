@@ -22,22 +22,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.*;
+import org.apache.hadoop.hive.serde2.typeinfo.*;
 import org.apache.hadoop.io.Writable;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
@@ -47,14 +36,8 @@ import org.bson.types.ObjectId;
 import org.bson.types.Symbol;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import static java.lang.String.format;
 
@@ -62,7 +45,7 @@ import static java.lang.String.format;
  * The BSONSerDe class deserializes (parses) and serializes object from BSON to Hive represented object. It's initialized with the hive
  * columns and hive recognized types as well as other config variables mandated by the StorageHanders.
  */
-public class BSONSerDe implements SerDe {
+public class BSONSerDe extends AbstractSerDe {
     private static final Log LOG = LogFactory.getLog(BSONSerDe.class);
 
     // stores the 1-to-1 mapping of MongoDB fields to hive columns
@@ -91,9 +74,14 @@ public class BSONSerDe implements SerDe {
     // BSONWritable to hold documents to be serialized.
     private BSONWritable bsonWritable;
 
-    /**
-     * Finds out the information of the table, including the column names and types.
-     */
+    @Override
+    public void initialize(final Configuration conf, final Properties tblProps, final Properties parProps) throws SerDeException {
+        this.initialize(conf,tblProps);
+    }
+
+        /**
+         * Finds out the information of the table, including the column names and types.
+         */
     @SuppressWarnings("unchecked")
     @Override
     public void initialize(final Configuration conf, final Properties tblProps) throws SerDeException {
